@@ -4,6 +4,7 @@ const {Users} =require("../../models/user");
 const _ = require("lodash");
 const jwt = require("jsonwebtoken");
 const config = require("config");
+const bcrypt = require("bcryptjs");
 
 router.post("/register", async (req, res) => {
   try {
@@ -39,19 +40,15 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     let user = await Users.findOne({ UserName: req.body.UserName });
-    
     if (!user) {
       return res.status(400).send("User with this username not registered");
     }
-
     let isPasswordValid = await bcrypt.compare(req.body.Password, user.Password);
-
     if (!isPasswordValid) {
       return res.status(401).send("Invalid password");
     }
-
     let token = jwt.sign({ _id: user._id, Name: user.Name }, config.get('jwtPrivateKey'));
-    
+    console.log(token);
     res.send(token);
   } catch (error) {
     console.error("Error:", error);

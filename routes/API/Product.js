@@ -1,6 +1,7 @@
 const express = require("express");
 let router = express.Router();
 const { Meals } = require("../../models/products");
+const auth = require("../../middlewares/auth"); 
 
 router.get("/", async (req, res) => {
   let page = req.query.page ? req.query.page : 1;
@@ -23,26 +24,34 @@ router.get("/:id", async (req, res) => {
 });
 
 
-router.put("/:id", async (req, res) => {
-  let Meal = await Meals.findById(req.params.id);
-  Meal.Name = req.body.Name;
-  Meal.Category = req.body.Category;
-  Meal.Price = req.body.Price;
-  Meal.Description = req.body.Description;
-  Meal.Ingredients = req.body.Ingredients;
-  Meal.Image = req.body.Image;
-  await Meal.save();
-  return res.send(Meal);
+router.put('/:id',auth, async (req, res) => {
+  try {
+    let Meal = await Meals.findById(req.params.id);
+    if (!Meal) {
+      return res.status(400).send('Product with this ID is not present');
+    }
+    Meal.Name = req.body.Name;
+    Meal.Category = req.body.Category;
+    Meal.Price = req.body.Price;
+    Meal.Description = req.body.Description;
+    Meal.Ingredients = req.body.Ingredients;
+    Meal.Image = req.body.Image;
+    await Meal.save();
+    return res.send(Meal);
+  } catch (err) {
+    console.error('Error:', err);
+    return res.status(500).send('Internal Server Error');
+  }
 });
 
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id",auth, async (req, res) => {
   let Meal = await Meals.findByIdAndDelete(req.params.id);
   return res.send(Meal);
 });
 
 
-router.post("/", async (req, res) => {
+router.post("/",auth, async (req, res) => {
   try {
     let meal = new Meals({
       Name: req.body.Name,
