@@ -4,11 +4,12 @@ const { Meals } = require("../../models/products");
 const auth = require("../../middlewares/auth"); 
 
 router.get("/", async (req, res) => {
-  let page = req.query.page ? req.query.page : 1;
-  let Perpage = req.query.perpage ? req.query.perpage : 10;
+  let page =Number(req.query.page ? req.query.page : 1);
+  let Perpage = Number(req.query.perpage ? req.query.perpage : 10);
   let skip = (page - 1) * Perpage;
   let Meal = await Meals.find().skip(skip).limit(Perpage);
-  return res.send(Meal);
+  let total = await Meals.countDocuments();
+  return res.send({total,Meal});
 });
 
 
